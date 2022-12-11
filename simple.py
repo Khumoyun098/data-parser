@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Dict
 
@@ -8,7 +9,7 @@ from bs4 import BeautifulSoup as bs
 
 target_url = "https://api.uza.uz/api/v1/posts/{post_id}"  # uza.uz
 
-limit_posts = 3
+limit_posts = 100
 found_list = []
 id_counter = 431916
 
@@ -21,13 +22,18 @@ while len(found_list) < limit_posts:
 
     sess = requests.Session()
     with sess.get(url=target_url.format(post_id=id_counter), verify=False, headers=headers) as r:
-        r.raise_for_status()
+        if r.status_code != 200 or r.status_code == 404:
+            continue
         data = r.json()
         # check lang
         if data["lang"] == 2:
             found_list.append(id_counter)
 
         id_counter -= 1
+
+
+def text_cleaner(text: str) -> str:
+    return re.sub(r"(@\[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
 
 
 def parser(post_id: int) -> Dict:
@@ -43,11 +49,12 @@ def parser(post_id: int) -> Dict:
     with sess.get(url=source_url, verify=False, headers=headers) as t:
         t.raise_for_status()
         content = t.json()["content"]
-        soup = bs(content, "html.parser")
+        soup = bs(content, "html5lib")
+        text = soup.text
         return {
             "source_url": source_url,
             "access_datetime": int(time.time()),
-            "content": soup.text
+            "content": ''.join(filter(lambda x: not x.isdigit(), text_cleaner(text.lower())))
         }
 
 
@@ -57,3 +64,5 @@ for i in found_list:
 
 df = pd.DataFrame.from_dict(container)
 df.to_csv(r'main.csv', index=False, header=True)
+
+exec("silver.py")
