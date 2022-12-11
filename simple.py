@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup as bs
 
 target_url = "https://api.uza.uz/api/v1/posts/{post_id}"  # uza.uz
 
-limit_posts = 100
+limit_posts = 5
 found_list = []
 id_counter = 431916
 
@@ -28,8 +28,10 @@ while len(found_list) < limit_posts:
         # check lang
         if data["lang"] == 2:
             found_list.append(id_counter)
+            print("LEN", len(found_list))
 
         id_counter -= 1
+        print("COIN", id_counter)
 
 
 def text_cleaner(text: str) -> str:
@@ -49,7 +51,7 @@ def parser(post_id: int) -> Dict:
     with sess.get(url=source_url, verify=False, headers=headers) as t:
         t.raise_for_status()
         content = t.json()["content"]
-        soup = bs(content, "html5lib")
+        soup = bs(content, "html.parser")
         text = soup.text
         return {
             "source_url": source_url,
@@ -65,4 +67,3 @@ for i in found_list:
 df = pd.DataFrame.from_dict(container)
 df.to_csv(r'main.csv', index=False, header=True)
 
-exec("silver.py")
