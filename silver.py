@@ -6,7 +6,7 @@
 
 import pandas as pd
 
-df = pd.read_csv('main.csv', usecols=['source_url', 'access_datetime', 'content'])
+df = pd.read_csv('kun_uz.csv', usecols=['source_url', 'access_datetime', 'content'])
 
 contents_to_words = df["content"].str.split(" ")
 
@@ -18,4 +18,4 @@ for content in contents_to_words:
 df['words'] = result
 df['count'] = [len(x) for x in result]
 
-df.to_csv('main.csv', encoding='utf-8')
+df.to_csv('kun_uz.csv', encoding='utf-8')
