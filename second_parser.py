@@ -29,7 +29,7 @@ for post in posts:
     container.append(post['href'])
 
 
-def limiter(start: int = 1, limit: int = 10000):
+def limiter(start: int = 1, limit: int = 100):
     next_page = soup.find_all("a", {"class": "load-more__link next"})[0]
     while start < limit:
         e = s.get(url=base_url + next_page["href"], headers=headers)
